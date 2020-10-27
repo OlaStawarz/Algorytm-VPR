@@ -60,6 +60,7 @@ namespace lab1
                 Console.WriteLine(cities[i]);
             }*/
 
+            //UWAGA - w ostatniej iteracji jest błąd!!
             permutation = new int[] { 5, 2, 1, 3, 4 };
 
             for (int i = 0; i < permutation.Length; i++)
