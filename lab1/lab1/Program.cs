@@ -62,52 +62,62 @@ namespace lab1
 
             permutation = new int[] { 5, 2, 1, 3, 4 };
 
-            int baseCity = permutation[0];
-            
-            permutation = permutation.Where(val => val != baseCity).ToArray();
+            for (int i = 0; i < permutation.Length; i++)
+            {
+                int baseCity = permutation[i];
+                int index = permutation[i];
 
-            double[] newDistances = new double[permutation.Length];
+                permutation = permutation.Where(val => val != baseCity).ToArray();
 
-            int numberOfCar = 1;
-            int index = permutation[0];
-            index = countLongestDistance(distances, index);
+                int numberOfCar = 1;
+                index = countLongestDistance(distances, index);
 
-            Console.WriteLine(numberOfCar + " samochód");
-            Console.WriteLine(cities[baseCity - 1]);
-            Console.WriteLine(cities[index - 1]);
+                Console.WriteLine(numberOfCar + " samochód");
+                Console.WriteLine(cities[baseCity - 1]);
+                Console.WriteLine(cities[index - 1]);
 
-            while (permutation.Length != 1)
-            {                
-
-                if (shortestDistance > ((double)2 / 3) * longestDistance)
+                while (permutation.Length != 1)
                 {
-                     numberOfCar++;
-                     Console.WriteLine(cities[baseCity - 1]);
-                     Console.WriteLine();
-                     Console.WriteLine(numberOfCar + " samochód");
-                     Console.WriteLine(cities[baseCity - 1]);
-                     
-                     index = countLongestDistance(distances, baseCity);
-                     Console.WriteLine(cities[index - 1]);
-                     index = countShortestDistance(distances, index);
-                     Console.WriteLine(cities[index - 1]);
-                } else
-                {
-                    
-                    if (!(shortestDistance == 0))
-                       permutation = permutation.Where(val => val != index).ToArray();
 
-                    index = countShortestDistance(distances, index);
-                    
-                    if (shortestDistance <= ((double)2 / 3) * longestDistance)
+                    if (shortestDistance > ((double)2 / 3) * longestDistance)
+                    {
+                        numberOfCar++;
+                        Console.WriteLine(cities[baseCity - 1]);
+                        Console.WriteLine();
+                        Console.WriteLine(numberOfCar + " samochód");
+                        Console.WriteLine(cities[baseCity - 1]);
+
+                        index = countLongestDistance(distances, baseCity);
                         Console.WriteLine(cities[index - 1]);
-                }
-             
-               }
+                        index = countShortestDistance(distances, index);
+                        
+                        if (shortestDistance <= ((double)2 / 3) * longestDistance || permutation.Length == 1)
+                            Console.WriteLine(cities[index - 1]);
+                    }
+                    else
+                    {
 
-            Console.WriteLine(cities[baseCity - 1]);
-            Console.WriteLine();
-            Console.WriteLine("Liczba samochodów: " + numberOfCar);
+                        if (!(shortestDistance == 0))
+                            permutation = permutation.Where(val => val != index).ToArray();
+
+                        index = countShortestDistance(distances, index);
+
+                        if (shortestDistance <= ((double)2 / 3) * longestDistance)
+                            Console.WriteLine(cities[index - 1]);
+                        
+                    }
+
+                }
+
+                Console.WriteLine(cities[baseCity - 1]);
+                Console.WriteLine();
+                Console.WriteLine("Liczba samochodów: " + numberOfCar);
+                Console.WriteLine();
+                Console.WriteLine();
+                permutation = new int[] { 5, 2, 1, 3, 4 };
+            }
+
+            
            
 
 
