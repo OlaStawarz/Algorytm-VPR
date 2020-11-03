@@ -9,19 +9,64 @@ namespace lab1
         public static double shortestDistance = 0;
         public static double longestDistance = 0;
         public static int[] permutation;
+        public static int[] randomPermutation;
+
+        public static WorkBook workbook;
+        public static WorkSheet sheet;
+
+        public static string[,] distances;
+        public static string[] cities;
+        public static int count;
+        public static string unit;
 
         static void Main(string[] args)
         {
-            WorkBook workbook = WorkBook.Load("PL.csv");
-            WorkSheet sheet = workbook.WorkSheets.First();
+
+            readData();            
+
+            permutation = new int[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                permutation[i] = i + 1;
+            }
+
+            VRP vrp = new VRP();
+            SA sa = new SA();
+
+            Random random = new Random();
+            randomPermutation = permutation.OrderBy(x => random.Next()).ToArray();
+
+            Console.WriteLine("Podstawowy algorytm: " + vrp.calculate(randomPermutation, distances, cities, unit));
+
+            Console.WriteLine("Ograniczenie pojemnościowe");
+            vrp.calculateWithCapacity(permutation, distances, cities, unit);
+            Console.WriteLine("Ograniczenie czasowe");
+            vrp.calculateWithTimeLimit(permutation, distances, cities, unit, count);
+
+            Console.WriteLine("Algorytm 2/3 odlegości: ");
+            greedyAlgorithm();
+
+            Console.WriteLine("SA");
+            randomPermutation = sa.SA_Algorithm(randomPermutation, distances, cities, unit, count);
+
+            greedyAlgorithm();
+               
+          
+        }
+
+        public static void readData ()
+        {
+            workbook = WorkBook.Load("PL.csv");
+            sheet = workbook.WorkSheets.First();
 
             char[] alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-                  
-            int count = sheet["A1"].IntValue;
-            string unit = sheet["A2"].StringValue;
-            
-            string[,] distances = new string[count, count];
-            string[] cities = new string[count];
+
+            count = sheet["A1"].IntValue;
+            unit = sheet["A2"].StringValue;
+
+            distances = new string[count, count];
+            cities = new string[count];
 
             for (int i = 0; i < count; i++)
             {
@@ -44,129 +89,101 @@ namespace lab1
                 cities[w] = cell.Text;
                 w++;
             }
+        }
+
+        public static void greedyAlgorithm() {
 
 
-            /*for (int i = 0; i < count; i++)
-            {
-                Console.WriteLine("________");
-                for (int j = 0; j < count; j++)
-                {
-                    Console.WriteLine(distances[i, j]);
-                }
-            }*/
-
-           /* for (int i = 0; i < count; i++)
-            {
-                Console.WriteLine(cities[i]);
-            }*/
-
-            //UWAGA - w ostatniej iteracji jest błąd!!
-            permutation = new int[] { 5, 2, 1, 3, 4 };
-
-            for (int i = 0; i < permutation.Length; i++)
-            {
-                int baseCity = permutation[i];
-                int index = permutation[i];
-
-                permutation = permutation.Where(val => val != baseCity).ToArray();
-
-                int numberOfCar = 1;
-                index = countLongestDistance(distances, index);
-
-                Console.WriteLine(numberOfCar + " samochód");
-                Console.WriteLine(cities[baseCity - 1]);
-                Console.WriteLine(cities[index - 1]);
-
-                while (permutation.Length != 1)
-                {
-
-                    if (shortestDistance > ((double)2 / 3) * longestDistance)
-                    {
-                        numberOfCar++;
-                        Console.WriteLine(cities[baseCity - 1]);
-                        Console.WriteLine();
-                        Console.WriteLine(numberOfCar + " samochód");
-                        Console.WriteLine(cities[baseCity - 1]);
-
-                        index = countLongestDistance(distances, baseCity);
-                        Console.WriteLine(cities[index - 1]);
-                        index = countShortestDistance(distances, index);
-                        
-                        if (shortestDistance <= ((double)2 / 3) * longestDistance || permutation.Length == 1)
-                            Console.WriteLine(cities[index - 1]);
-                    }
-                    else
-                    {
-
-                        if (!(shortestDistance == 0))
-                            permutation = permutation.Where(val => val != index).ToArray();
-
-                        index = countShortestDistance(distances, index);
-
-                        if (shortestDistance <= ((double)2 / 3) * longestDistance)
-                            Console.WriteLine(cities[index - 1]);
-                        
-                    }
-
-                }
-
-                Console.WriteLine(cities[baseCity - 1]);
-                Console.WriteLine();
-                Console.WriteLine("Liczba samochodów: " + numberOfCar);
-                Console.WriteLine();
-                Console.WriteLine();
-                permutation = new int[] { 5, 2, 1, 3, 4 };
-            }
-
-            
-           
-
-
-            /*Console.WriteLine(newDistances.Length);
-            foreach (double d in newDistances)
-            {
-                Console.WriteLine(d);
-            }*/
-
-
-            /*double longestDistance = 0; 
+            int[] copiedPermutation = randomPermutation;
+            int baseCity = randomPermutation[0];
+            int index = randomPermutation[0];
             double sum = 0;
-            for (int p = 1; p < permutation.Length; p++)
+
+            randomPermutation = randomPermutation.Where(val => val != baseCity).ToArray();
+
+            int numberOfCar = 1;
+            index = countLongestDistance(index);
+
+           /* Console.WriteLine(numberOfCar + " samochód");
+            Console.WriteLine(cities[baseCity - 1]);
+            Console.WriteLine(cities[index - 1]);*/
+            sum += longestDistance;
+
+            int temp = index;
+            int pom = 0;
+
+            while (randomPermutation.Length != 1)
             {
-                int k = p - 1;
-                int lower = permutation[k] - 1;
-                int upper = permutation[p] - 1;
-                Console.WriteLine(distances[lower, upper]);
-                //sum += Convert.ToDouble(distances[lower, upper]);
-                if (Convert.ToDouble(distances[lower, upper]) > longestDistance)
+
+                if (shortestDistance > ((double)2 / 3) * longestDistance)
                 {
-                    longestDistance = Convert.ToDouble(distances[lower, upper]);
+                    numberOfCar++;
+                    sum += longestDistance;
+                    /*Console.WriteLine(cities[baseCity - 1]);
+                    Console.WriteLine();
+                    Console.WriteLine(numberOfCar + " samochód");
+                    Console.WriteLine(cities[baseCity - 1]);*/
+
+                    index = countLongestDistance(baseCity);
+                    //Console.WriteLine(cities[index - 1]);
+                    sum += longestDistance;
+
+                    index = countShortestDistance(index);
+
+                    if (shortestDistance <= ((double)2 / 3) * longestDistance || randomPermutation.Length == 1)
+                    {
+                        //Console.WriteLine(cities[index - 1]);
+                        sum += shortestDistance;
+                    }
+
+                }
+                else
+                {
+
+                    if (!(shortestDistance == 0))
+                        randomPermutation = randomPermutation.Where(val => val != index).ToArray();
+
+                    index = countShortestDistance(index);
+                    pom = index;
+
+                    if (shortestDistance <= ((double)2 / 3) * longestDistance)
+                    {
+                        //Console.WriteLine(cities[index - 1]);
+                        sum += shortestDistance;
+                    }
+                    pom = 0;
+
                 }
 
             }
 
-            Console.WriteLine(longestDistance);*/
-            /*Console.WriteLine("Trasa: ");
-            foreach (int i in permutation) {
-                Console.WriteLine(cities[i-1]);
-            }*/
+            //Console.WriteLine(cities[baseCity - 1]);
+            sum += Convert.ToDouble(distances[randomPermutation[0] - 1, baseCity - 1]);
+            //Console.WriteLine();
+            Console.WriteLine("Liczba samochodów: " + numberOfCar);
+            Console.WriteLine("Długość trasy: " + sum);
+           /* Console.WriteLine();
+            Console.WriteLine();*/
 
-            //Console.WriteLine("Przebyta odległość: " + sum + unit);
+
+            randomPermutation = copiedPermutation;
+            shortestDistance = 0;
+            longestDistance = 0;
 
         }
 
-        public static int countShortestDistance(string[,] distances, int baseCity)
+        public static int countShortestDistance(int baseCity)
         {
             int index = 0;
             shortestDistance = double.MaxValue;
 
-            for (int j = 0; j < permutation.Length; j++)
+            for (int j = 0; j < randomPermutation.Length; j++)
             {
-                if (Convert.ToDouble(distances[baseCity - 1, permutation[j] - 1]) < shortestDistance)
+                if (Convert.ToDouble(distances[baseCity - 1, randomPermutation[j] - 1]) < shortestDistance)
                 {
-                    shortestDistance = Convert.ToDouble(distances[baseCity - 1, permutation[j] - 1]);
+                    shortestDistance = Convert.ToDouble(distances[baseCity - 1, randomPermutation[j] - 1]);
                    // Console.WriteLine(permutation[j]);
-                    index = permutation[j];
+                    index = randomPermutation[j];
 
                 }
             }
@@ -176,26 +193,26 @@ namespace lab1
             return index;
         }
 
-        public static int countLongestDistance (string[,] distances, int baseCity)
+        public static int countLongestDistance (int baseCity)
         {
 
             int index = 0;
             longestDistance = 0;
 
-            for (int i = 0; i < permutation.Length; i++)
+            for (int i = 0; i < randomPermutation.Length; i++)
             {
-                if (Convert.ToDouble(distances[baseCity - 1, permutation[i] - 1]) > longestDistance)
+                if (Convert.ToDouble(distances[baseCity - 1, randomPermutation[i] - 1]) > longestDistance)
                 {
-                    longestDistance = Convert.ToDouble(distances[baseCity - 1, permutation[i] - 1]);
+                    longestDistance = Convert.ToDouble(distances[baseCity - 1, randomPermutation[i] - 1]);
                   //  Console.WriteLine(permutation[i]);
-                    index = permutation[i];
+                    index = randomPermutation[i];
 
                 }
             }
 
             /*Console.WriteLine(longestDistance);
             Console.WriteLine(index);*/
-            permutation = permutation.Where(val => val != index).ToArray();
+            randomPermutation = randomPermutation.Where(val => val != index).ToArray();
             return index;
         }
 
